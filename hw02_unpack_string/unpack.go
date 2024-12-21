@@ -35,6 +35,8 @@ func Unpack(input string) (string, error) {
 				for j := 0; j < count-1; j++ {
 					result += symbols[i-1]
 				}
+			} else if count == 0 {
+				result = result[:len(result)-1]
 			}
 		} else {
 			result += string(current)
