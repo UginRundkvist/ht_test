@@ -7,26 +7,19 @@ import (
 
 var ErrInvalidString = errors.New("invalid string")
 
-func isSingleCharNumber(str string) bool {
-	_, err := strconv.Atoi(str)
-	return err == nil
-}
-
 func Unpack(input string) (string, error) {
 	result := ""
-	runes := []rune(input)
-	var symbols []string
+	symbols := make([]string, 0)
 
-	for _, r := range runes {
+	for _, r := range input {
 		symbols = append(symbols, string(r))
 	}
-	length := len(symbols)
 
-	for i := 0; i < length; i++ {
+	for i := 0; i < len(symbols); i++ {
 		current := symbols[i]
 
-		if isSingleCharNumber(current) {
-			if i == 0 || isSingleCharNumber(symbols[i-1]) {
+		if isStringNumber(current) {
+			if i == 0 || isStringNumber(symbols[i-1]) {
 				return "", ErrInvalidString
 			}
 
@@ -39,8 +32,13 @@ func Unpack(input string) (string, error) {
 				result = result[:len(result)-1]
 			}
 		} else {
-			result += string(current)
+			result += current
 		}
 	}
 	return result, nil
+}
+
+func isStringNumber(str string) bool {
+	_, err := strconv.Atoi(str)
+	return err == nil
 }
