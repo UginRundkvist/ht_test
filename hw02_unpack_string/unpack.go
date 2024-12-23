@@ -32,7 +32,9 @@ func Unpack(input string) (string, error) {
 				result = result[:len(result)-1]
 			}
 		} else {
+
 			result += current
+
 		}
 	}
 	return result, nil
