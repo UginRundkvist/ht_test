@@ -50,18 +50,15 @@ func Top10(a string) []string {
 
 		return wordstruct[i].Word < wordstruct[j].Word
 	})
-
 	otv := []string{}
 
-	for i := 0; i < randeotv(len(wordstruct)); i++ {
-		otv = append(otv, wordstruct[i].Word)
+	if len(wordstruct) > 10 {
+		wordstruct = wordstruct[:10]
 	}
-	return (otv)
-}
 
-func randeotv(a int) int {
-	if a > 10 {
-		return 10
+	for i := 0; i < len(wordstruct); i++ {
+		word := wordstruct[i].Word
+		otv = append(otv, word)
 	}
-	return a
+	return otv
 }
