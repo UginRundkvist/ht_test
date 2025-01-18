@@ -66,4 +66,18 @@ func TestList(t *testing.T) {
 
 		require.Equal(t, []int{10, 20, 40}, elems)
 	})
+
+	t.Run("second new test", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(100)
+		l.PushBack(200)
+		l.PushBack(300)
+		l.PushBack(400)
+
+		prelast := l.Front().Prev
+		l.Remove(prelast)
+
+		require.Equal(t, 4, l.Len())
+	})
 }
