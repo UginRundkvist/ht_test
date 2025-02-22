@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sync"
-	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -37,14 +37,24 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 		return errors.New("Не может установить указатель на отступ")
 	}
 
-	sizeToCopy := limit
-	if limit == -1 {
-		sizeToCopy = sizeInBytes - offset
-	} else if sizeInBytes-offset < limit {
+	var sizeToCopy int64
+	if limit > 0 {
+		sizeToCopy = limit
+	} else {
 		sizeToCopy = sizeInBytes - offset
 	}
 
-	limitedReader := io.LimitReader(infile, limit)
+	if limit == 0 {
+		limit = sizeInBytes
+	}
+
+	bar := pb.New64(sizeToCopy)
+	bar.SetTemplateString(`{{ etime . }} [{{ bar . }}] {{ percent . }}`)
+	bar.Start()
+
+	fmt.Println("Сколько нужно cкопировать байт: ", sizeToCopy)
+
+	limitedReader := bar.NewProxyReader(io.LimitReader(infile, limit))
 
 	tofile, err := os.Create(toPath)
 	if err != nil {
@@ -52,56 +62,8 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	defer tofile.Close()
 
-	var (
-		bytesCopied int64
-		mutex       sync.Mutex
-		done        = make(chan struct{})
-	)
-
-	go func() {
-		ticker := time.NewTicker(250 * time.Millisecond)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-done:
-				fmt.Printf("\rКопирование завершено: 100.00%%      \n")
-				return
-			case <-ticker.C:
-				mutex.Lock()
-				if sizeToCopy > 0 {
-					progress := float64(bytesCopied) / float64(sizeToCopy) * 100
-					fmt.Printf("\rПрогресс: %.2f%%", progress)
-				} else {
-					fmt.Print("\rПрогресс: Неизвестно (размер файла 0) ")
-				}
-				mutex.Unlock()
-			}
-		}
-	}()
-
-	buffer := make([]byte, 32*1024)
-	for {
-		n, err := limitedReader.Read(buffer)
-		if err != nil && err != io.EOF {
-			close(done)
-			return err
-		}
-		if n == 0 {
-			break
-
-			written, err := tofile.Write(buffer[:n])
-			if err != nil {
-				close(done)
-				return err
-			}
-
-			mutex.Lock()
-			bytesCopied += int64(written)
-			mutex.Unlock()
-		}
-		close(done)
-
-	}
+	batecopied, err := io.Copy(tofile, limitedReader)
+	bar.Finish()
+	fmt.Println(batecopied)
 	return nil
 }
