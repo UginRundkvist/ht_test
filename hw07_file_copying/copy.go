@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cheggaaa/pb/v3"
+	"github.com/cheggaaa/pb/v3" //nolint:depguard
 )
 
 var (
@@ -22,19 +22,19 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	sizeInBytes := stat.Size()
 	if sizeInBytes < offset {
-		return errors.New("невалидная ситуация")
+		return err
 	}
 
 	infile, err := os.Open(fromPath)
 	if err != nil {
-		return errors.New("Не может открыть входящий файл")
+		return err
 	}
 
 	defer infile.Close()
 
 	_, err = infile.Seek(offset, io.SeekStart)
 	if err != nil {
-		return errors.New("Не может установить указатель на отступ")
+		return err
 	}
 
 	var sizeToCopy int64
@@ -58,11 +58,13 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	tofile, err := os.Create(toPath)
 	if err != nil {
-		return errors.New("Не может создать файл")
+		return err
 	}
 	defer tofile.Close()
-
 	batecopied, err := io.Copy(tofile, limitedReader)
+	if err != nil {
+		return err
+	}
 	bar.Finish()
 	fmt.Println(batecopied)
 	return nil
