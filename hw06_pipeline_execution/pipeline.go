@@ -20,6 +20,7 @@ func execStage(done, in In) Out {
 	out := make(Bi)
 	go func() {
 		defer close(out)
+		defer close(in)
 
 		for {
 			select {
