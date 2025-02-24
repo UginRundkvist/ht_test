@@ -22,8 +22,7 @@ func execStage(done, in In) Out {
 		// defer close(out)
 		defer func() {
 			close(out)
-			for range in {
-
+			for range in { //nolint:revive
 			}
 		}()
 		for {
