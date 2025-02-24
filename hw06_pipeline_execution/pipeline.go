@@ -19,9 +19,13 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 func execStage(done, in In) Out {
 	out := make(Bi)
 	go func() {
-		defer close(out)
-		defer close(in)
+		// defer close(out)
+		defer func() {
+			close(out)
+			for range in {
 
+			}
+		}()
 		for {
 			select {
 			case <-done:
