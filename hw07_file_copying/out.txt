@@ -1,4 +1,4 @@
-G!o
+Go
 Documents
 Packages
 The Project

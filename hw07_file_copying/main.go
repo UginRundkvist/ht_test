@@ -23,5 +23,4 @@ func main() {
 	if err != nil {
 		println("Ошибка", err)
 	}
-
 }
