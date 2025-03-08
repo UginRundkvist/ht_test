@@ -17,16 +17,19 @@ var (
 func Copy(fromPath, toPath string, offset, limit int64) error {
 	stat, err := os.Stat(fromPath)
 	if err != nil {
+		fmt.Println("Ошибка с stat")
 		return err
 	}
 
 	sizeInBytes := stat.Size()
 	if sizeInBytes < offset {
+		fmt.Println("Ошибка с sizeInBytes")
 		return err
 	}
 
 	infile, err := os.Open(fromPath)
 	if err != nil {
+		fmt.Println("Ошибка с infile")
 		return err
 	}
 
@@ -34,6 +37,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	_, err = infile.Seek(offset, io.SeekStart)
 	if err != nil {
+		fmt.Println("Ошибка с Seek")
 		return err
 	}
 
@@ -58,11 +62,13 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 
 	tofile, err := os.Create(toPath)
 	if err != nil {
+		fmt.Println("Ошибка с tofile")
 		return err
 	}
 	defer tofile.Close()
 	batecopied, err := io.Copy(tofile, limitedReader)
 	if err != nil {
+		fmt.Println("Ошибка с batecopied")
 		return err
 	}
 	bar.Finish()
