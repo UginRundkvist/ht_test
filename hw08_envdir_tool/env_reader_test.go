@@ -13,8 +13,8 @@ func TestReadDir(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	os.WriteFile(filepath.Join(dir, "FOO"), []byte("bar\n"), 0644)
-	os.WriteFile(filepath.Join(dir, "EMPTY"), []byte(""), 0644)
+	os.WriteFile(filepath.Join(dir, "FOO"), []byte("bar\n"), 0o644)
+	os.WriteFile(filepath.Join(dir, "EMPTY"), []byte(""), 0o644)
 
 	env, err := ReadDir(dir)
 	if err != nil {

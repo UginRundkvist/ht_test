@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 )
@@ -18,14 +20,21 @@ func RunCmd(cmd []string, env Environment) (returnCode int) {
 		}
 	}
 
-	command := exec.Command(cmd[0], cmd[1:]...)
+	binPath, err := exec.LookPath(cmd[0])
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: command not found: %s\n", cmd[0])
+		return 127
+	}
+
+	command := exec.Command(binPath, cmd[1:]...)
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
 	command.Stdin = os.Stdin
 	command.Env = os.Environ()
 
 	if err := command.Run(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
 			return exitErr.ExitCode()
 		}
 		return 1
