@@ -37,24 +37,38 @@ type (
 )
 
 func TestValidate(t *testing.T) {
-	tests := []struct {
-		in          interface{}
-		expectedErr error
-	}{
-		{
-			// Place your code here.
-		},
-		// ...
-		// Place your code here.
-	}
+	// tests := []struct {
+	// 	in          interface{}
+	// 	expectedErr error
+	// }{
+	// 	{
+	// 		// Place your code here.
+	// 	},
+	// 	// ...
+	// 	// Place your code here.
+	// }
 
-	for i, tt := range tests {
-		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			tt := tt
-			t.Parallel()
+	// for i, tt := range tests {
+	// 	t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
+	// 		tt := tt
+	// 		t.Parallel()
 
-			// Place your code here.
-			_ = tt
-		})
-	}
+	// 		// Place your code here.
+	// 		_ = tt
+	// 	})
+	// }
+	t.Run("My case", func(t *testing.T) {
+		type Example struct {
+			Name string `validate:"len:32"`
+			Age  int    `validate:"min:10,max:20"`
+			City string
+		}
+		example := Example{Name: "Test", Age: 25, City: "Moscow"}
+		err := Validate(example)
+		if err != nil {
+			fmt.Println("Ошибка валидации:", err)
+		} else {
+			fmt.Println("Валидация прошла успешно")
+		}
+	})
 }
