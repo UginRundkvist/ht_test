@@ -158,7 +158,7 @@ func validateString(str string, validatorName, validatorArgs string) error {
 			return fmt.Errorf("неверное строковое значение: %w", err)
 		}
 		if len(str) != expectedLen {
-			return fmt.Errorf("длинна должна быть %d", expectedLen)
+			return fmt.Errorf("длина должна быть %d", expectedLen)
 		}
 	case "regexp":
 		re, err := regexp.Compile(validatorArgs)
