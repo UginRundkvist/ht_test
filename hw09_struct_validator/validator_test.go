@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -50,14 +51,14 @@ func TestValidate(t *testing.T) {
 			in: App{
 				Version: "0.0.1.0",
 			},
-			expectedErr: ValidationErrors{{Field: "Version", Err: fmt.Errorf("длинна должна быть %d", 5)}},
+			expectedErr: ValidationErrors{{Field: "Version", Err: fmt.Errorf("длина должна быть %d", 5)}},
 		},
 		{
 			in: Response{
-				Code: 200,
+				Code: 2000,
 				Body: "OK",
 			},
-			expectedErr: nil,
+			expectedErr: ValidationErrors{{Field: "Code", Err: fmt.Errorf("должно быть в: %d,%d,%d", 200, 404, 500)}},
 		},
 	}
 
@@ -67,36 +68,40 @@ func TestValidate(t *testing.T) {
 			t.Parallel()
 
 			err := Validate(tt.in)
-
-			if (err != nil) != (tt.expectedErr != nil) {
-				t.Errorf("ошибка валидации %v, ожидаемая ошибка %v", err, tt.expectedErr)
-				return
-			}
-
-			if tt.expectedErr != nil {
-				expectedVErr, ok := tt.expectedErr.(ValidationErrors)
-				if ok {
-					actualVErr, ok2 := err.(ValidationErrors)
-					if !ok2 {
-						t.Errorf("ожидается массив ошибок, но получено: %T", err)
-						return
-					}
-
-					if len(actualVErr) != len(expectedVErr) {
-						t.Errorf("Ожидаемое колличество ошибок %d, получено %d", len(expectedVErr), len(actualVErr))
-						return
-					}
-
-					for i := range expectedVErr {
-						if actualVErr[i].Err.Error() != expectedVErr[i].Err.Error() || actualVErr[i].Field != expectedVErr[i].Field {
-							t.Errorf("ожидается : %v, получено: %v", expectedVErr[i], actualVErr[i])
-						}
-					}
-				}
-				if err != tt.expectedErr {
-					t.Errorf("ошибка валидации = %v, ожидаемая ошибка %v", err, tt.expectedErr)
-				}
+			if !compareErrors(err, tt.expectedErr) {
+				t.Errorf("ошибка валидации: %v, ожидаемая ошибка: %v", err, tt.expectedErr)
 			}
 		})
 	}
+}
+
+func compareErrors(actual, expected error) bool {
+	if (actual != nil) != (expected != nil) {
+		return false
+	}
+
+	if expected == nil {
+		return true
+	}
+
+	var expectedVErr ValidationErrors
+	if errors.As(expected, &expectedVErr) {
+		var actualVErr ValidationErrors
+		if !errors.As(actual, &actualVErr) {
+			return false
+		}
+
+		if len(actualVErr) != len(expectedVErr) {
+			return false
+		}
+
+		for i := range expectedVErr {
+			if actualVErr[i].Err.Error() != expectedVErr[i].Err.Error() || actualVErr[i].Field != expectedVErr[i].Field {
+				return false
+			}
+		}
+		return true
+	}
+
+	return errors.Is(actual, expected)
 }

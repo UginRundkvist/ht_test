@@ -16,7 +16,7 @@ type ValidationError struct {
 type ValidationErrors []ValidationError
 
 func (v ValidationErrors) Error() string {
-	var errMsgs []string
+	errMsgs := make([]string, 0, len(v))
 	for _, err := range v {
 		errMsgs = append(errMsgs, fmt.Sprintf("%s: %s", err.Field, err.Err))
 	}
@@ -71,10 +71,7 @@ func Validate(v interface{}) error {
 					errors = append(errors, ValidationError{Field: fieldName, Err: err})
 				}
 			case reflect.Slice:
-				err := validateSlice(fieldValue, fieldName, validatorArgs, errors, validatorName)
-				if err != nil {
-					errors = append(errors, ValidationError{Field: fieldName, Err: err})
-				}
+				validateSlice(fieldValue, fieldName, validatorArgs, errors, validatorName)
 			default:
 				fmt.Printf("Неверный тип поля: %s\n", fieldValue.Kind())
 			}
@@ -88,7 +85,12 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func validateSlice(fieldValue reflect.Value, fieldName string, validatorArgs string, errors ValidationErrors, validatorName string) error {
+func validateSlice(
+	fieldValue reflect.Value,
+	fieldName string, validatorArgs string,
+	errors ValidationErrors,
+	validatorName string,
+) {
 	for j := 0; j < fieldValue.Len(); j++ {
 		elementValue := fieldValue.Index(j)
 		switch elementValue.Kind() {
@@ -106,7 +108,6 @@ func validateSlice(fieldValue reflect.Value, fieldName string, validatorArgs str
 			fmt.Printf("Неверный элемент слайса: %s\n", elementValue.Kind())
 		}
 	}
-	return nil
 }
 
 func validateInt(num int64, validatorName, validatorArgs string) error {
