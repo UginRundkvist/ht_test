@@ -2,13 +2,13 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 )
 
 type UserRole string
 
-// Test the function on different structures and other types.
 type (
 	User struct {
 		ID     string `json:"id" validate:"len:36"`
@@ -24,11 +24,7 @@ type (
 		Version string `validate:"len:5"`
 	}
 
-	Token struct {
-		Header    []byte
-		Payload   []byte
-		Signature []byte
-	}
+	// }.
 
 	Response struct {
 		Code int    `validate:"in:200,404,500"`
@@ -42,10 +38,28 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: User{
+				ID:     "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+				Age:    25,
+				Email:  "test@example.com",
+				Role:   "admin",
+				Phones: []string{"12345678901", "98765432109"},
+			},
+			expectedErr: nil,
 		},
-		// ...
-		// Place your code here.
+		{
+			in: App{
+				Version: "0.0.1.0",
+			},
+			expectedErr: ValidationErrors{{Field: "Version", Err: fmt.Errorf("длина должна быть %d", 5)}},
+		},
+		{
+			in: Response{
+				Code: 2000,
+				Body: "OK",
+			},
+			expectedErr: ValidationErrors{{Field: "Code", Err: fmt.Errorf("должно быть в: %d,%d,%d", 200, 404, 500)}},
+		},
 	}
 
 	for i, tt := range tests {
@@ -53,8 +67,41 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
-			_ = tt
+			err := Validate(tt.in)
+			if !compareErrors(err, tt.expectedErr) {
+				t.Errorf("ошибка валидации: %v, ожидаемая ошибка: %v", err, tt.expectedErr)
+			}
 		})
 	}
+}
+
+func compareErrors(actual, expected error) bool {
+	if (actual != nil) != (expected != nil) {
+		return false
+	}
+
+	if expected == nil {
+		return true
+	}
+
+	var expectedVErr ValidationErrors
+	if errors.As(expected, &expectedVErr) {
+		var actualVErr ValidationErrors
+		if !errors.As(actual, &actualVErr) {
+			return false
+		}
+
+		if len(actualVErr) != len(expectedVErr) {
+			return false
+		}
+
+		for i := range expectedVErr {
+			if actualVErr[i].Err.Error() != expectedVErr[i].Err.Error() || actualVErr[i].Field != expectedVErr[i].Field {
+				return false
+			}
+		}
+		return true
+	}
+
+	return errors.Is(actual, expected)
 }
