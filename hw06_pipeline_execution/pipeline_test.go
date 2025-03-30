@@ -1,6 +1,7 @@
 package hw06pipelineexecution
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"testing"
@@ -56,6 +57,7 @@ func TestPipeline(t *testing.T) {
 			result = append(result, s.(string))
 		}
 		elapsed := time.Since(start)
+		fmt.Println("Время: ", elapsed)
 
 		require.Equal(t, []string{"102", "104", "106", "108", "110"}, result)
 		require.Less(t,
