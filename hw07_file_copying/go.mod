@@ -1,4 +1,4 @@
-module github.com/UginRundkvist/ht_test/hw07_file_copying
+module github.com/UginRundkvist/hw07_file_copying
 
 go 1.22.0
 

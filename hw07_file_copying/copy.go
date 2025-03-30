@@ -39,7 +39,6 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	if err != nil {
 		fmt.Println("Ошибка с Seek")
 		return err
-
 	}
 
 	var sizeToCopy int64
