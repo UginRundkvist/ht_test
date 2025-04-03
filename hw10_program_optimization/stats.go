@@ -1,22 +1,10 @@
 package hw10programoptimization
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 )
-
-type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
-}
 
 type DomainStat map[string]int
 
@@ -28,39 +16,37 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	return countDomains(u, domain)
 }
 
-type users [100_000]User
-
-func getUsers(r io.Reader) (result users, err error) {
-	content, err := io.ReadAll(r)
+func getUsers(r io.Reader) ([]string, error) {
+	content, err := io.ReadAll(r) // изменить
+	//line, err := r.ReadString('\n')
 	if err != nil {
-		return
+		return nil, err
 	}
-
 	lines := strings.Split(string(content), "\n")
-	for i, line := range lines {
-		var user User
-		if err = json.Unmarshal([]byte(line), &user); err != nil {
-			return
-		}
-		result[i] = user
-	}
-	return
+	return lines, nil
 }
 
-func countDomains(u users, domain string) (DomainStat, error) {
-	result := make(DomainStat)
-
-	for _, user := range u {
-		matched, err := regexp.Match("\\."+domain, []byte(user.Email))
-		if err != nil {
-			return nil, err
-		}
-
-		if matched {
-			num := result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])]
-			num++
-			result[strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])] = num
+func countDomains(u []string, domain string) (DomainStat, error) {
+	stat := make(DomainStat)
+	for _, line := range u {
+		name := stringChange(line)
+		domainName := strings.Split(name, ".")
+		if domainName[1] == domain {
+			if _, exists := stat[name]; exists {
+				stat[name]++
+			} else {
+				stat[name] = 1
+			}
 		}
 	}
-	return result, nil
+	return stat, nil
+}
+
+func stringChange(line string) string {
+	line = strings.ToLower(line)
+	user := strings.Split(line, ",")
+	email := strings.Split(user[3], ":")
+	newEmail := strings.ReplaceAll(email[1], "\"", "")
+	emailName := strings.Split(newEmail, "@")
+	return emailName[1]
 }
