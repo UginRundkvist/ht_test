@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"time"
@@ -44,7 +43,6 @@ func (c *telnetClient) Close() error {
 	if c.conn != nil {
 		return c.conn.Close()
 	}
-	fmt.Println("telnet client closed")
 	return nil
 }
 

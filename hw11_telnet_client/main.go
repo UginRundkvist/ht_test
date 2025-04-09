@@ -1,6 +1,51 @@
 package main
 
+import (
+	"fmt"
+	"io"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
 func main() {
-	// Place your code here,
-	// P.S. Do not rush to throw context down, think think if it is useful with blocking operation?
+	address := "localhost:4242"
+	timeout := 10 * time.Second
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, syscall.SIGINT)
+
+	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
+	fmt.Println("Подключено")
+	if err := client.Connect(); err != nil {
+		fmt.Fprintf(os.Stderr, "Ошибка подключения к серверу ", err)
+		return
+	}
+
+	done := make(chan struct{})
+	go func() {
+		if err := client.Send(); err != nil {
+			fmt.Fprintf(os.Stderr, "Ошибка при отправке ", err)
+		}
+		done <- struct{}{}
+	}()
+
+	go func() {
+		if err := client.Receive(); err != nil {
+			if err != io.EOF {
+				fmt.Fprintf(os.Stderr, "Ошибка при получении", err)
+			}
+		}
+		done <- struct{}{}
+	}()
+
+	select {
+	case <-done:
+		fmt.Println("Соединение закрыто")
+	case <-signalChan:
+		fmt.Println("Завершение работы")
+	}
+
+	client.Close()
 }
