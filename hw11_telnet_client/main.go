@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -15,8 +16,6 @@ import (
 func main() {
 	timeoutPtr := flag.Duration("timeout", 10*time.Second, "timeout")
 	flag.Parse()
-	//localhostPtr := flag.Int("localhost", 4242, "localhost")
-	//fmt.Println(*address)
 
 	timeout := *timeoutPtr
 	args := flag.Args()
@@ -27,20 +26,19 @@ func main() {
 	port := args[1]
 	address := net.JoinHostPort(host, port)
 
-	//address := "localhost:4242"
-	//timeout := 10 * time.Second
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT)
 
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
 		fmt.Println("Ошибка подключения к серверу ", err)
-		//fmt.Fprintf(os.Stderr, "Ошибка подключения к серверу  %v", err)
 		return
 	}
-
+	var wg sync.WaitGroup
+	wg.Add(2)
 	done := make(chan struct{})
 	go func() {
+		defer wg.Done()
 		if err := client.Send(); err != nil {
 			fmt.Println("Ошибка при отправке", err)
 		}
@@ -48,6 +46,7 @@ func main() {
 	}()
 
 	go func() {
+		defer wg.Done()
 		if err := client.Receive(); err != nil {
 			if err != io.EOF {
 				fmt.Println("Ошибка при получении ", err)
@@ -62,6 +61,6 @@ func main() {
 	case <-signalChan:
 		fmt.Println("Завершение работы")
 	}
-
+	wg.Wait()
 	client.Close()
 }
