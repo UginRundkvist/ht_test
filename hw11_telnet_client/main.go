@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -36,31 +37,24 @@ func main() {
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
-	//done := make(chan struct{})
 	go func() {
 		defer wg.Done()
 		if err := client.Send(); err != nil {
 			fmt.Println("Ошибка при отправке", err)
 		}
-		//done <- struct{}{}
 	}()
 
 	go func() {
 		defer wg.Done()
 		if err := client.Receive(); err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				fmt.Println("Ошибка при получении ", err)
 			}
 		}
-		//done <- struct{}{}
 	}()
 
-	select {
-	//case <-done:
-	//	fmt.Println("Соединение закрыто")
-	case <-signalChan:
-		fmt.Println("Завершение работы")
-	}
+	<-signalChan
+	fmt.Println("Завершение работы")
 	wg.Wait()
 	client.Close()
 }
