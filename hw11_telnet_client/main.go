@@ -34,7 +34,7 @@ func main() {
 
 	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
-		fmt.Println("Ошибка подключения к серверу ")
+		fmt.Println("Ошибка подключения к серверу ", err)
 		//fmt.Fprintf(os.Stderr, "Ошибка подключения к серверу  %v", err)
 		return
 	}
@@ -42,7 +42,7 @@ func main() {
 	done := make(chan struct{})
 	go func() {
 		if err := client.Send(); err != nil {
-			fmt.Println("Ошибка при отправке")
+			fmt.Println("Ошибка при отправке", err)
 		}
 		done <- struct{}{}
 	}()
@@ -50,7 +50,7 @@ func main() {
 	go func() {
 		if err := client.Receive(); err != nil {
 			if err != io.EOF {
-				fmt.Println("Ошибка при получении")
+				fmt.Println("Ошибка при получении ", err)
 			}
 		}
 		done <- struct{}{}
