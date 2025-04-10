@@ -20,8 +20,8 @@ func init() {
 func main() {
 	flag.Parse()
 	fmt.Println(from, to, offset, limit)
-	// err := Copy(from, to, offset, limit)
-	// if err != nil {
-	// 	println("Ошибка", err)
-	// }
+	err := Copy(from, to, offset, limit)
+	if err != nil {
+		println("Ошибка", err)
+	}
 }
