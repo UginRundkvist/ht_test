@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,16 +13,26 @@ import (
 )
 
 func main() {
-	timeout := flag.Duration("timeout", 10*time.Second, "timeout")
-	address := flag.String("timeout", "localhost:4242", "timeout")
+	timeoutPtr := flag.Duration("timeout", 10*time.Second, "timeout")
+	flag.Parse()
+	//localhostPtr := flag.Int("localhost", 4242, "localhost")
+	//fmt.Println(*address)
+
+	timeout := *timeoutPtr
+	args := flag.Args()
+	if len(args) != 2 {
+		log.Fatalf("usage: go-telnet --timeout=10s host port")
+	}
+	host := args[0]
+	port := args[1]
+	address := net.JoinHostPort(host, port)
+
 	//address := "localhost:4242"
 	//timeout := 10 * time.Second
-	flag.Parse()
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT)
 
-	client := NewTelnetClient(*address, *timeout, os.Stdin, os.Stdout)
-	fmt.Println("Подключено")
+	client := NewTelnetClient(address, timeout, os.Stdin, os.Stdout)
 	if err := client.Connect(); err != nil {
 		fmt.Println("Ошибка подключения к серверу ")
 		//fmt.Fprintf(os.Stderr, "Ошибка подключения к серверу  %v", err)
