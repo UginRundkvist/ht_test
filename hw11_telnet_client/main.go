@@ -36,13 +36,13 @@ func main() {
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
-	done := make(chan struct{})
+	//done := make(chan struct{})
 	go func() {
 		defer wg.Done()
 		if err := client.Send(); err != nil {
 			fmt.Println("Ошибка при отправке", err)
 		}
-		done <- struct{}{}
+		//done <- struct{}{}
 	}()
 
 	go func() {
@@ -52,12 +52,12 @@ func main() {
 				fmt.Println("Ошибка при получении ", err)
 			}
 		}
-		done <- struct{}{}
+		//done <- struct{}{}
 	}()
 
 	select {
-	case <-done:
-		fmt.Println("Соединение закрыто")
+	//case <-done:
+	//	fmt.Println("Соединение закрыто")
 	case <-signalChan:
 		fmt.Println("Завершение работы")
 	}
