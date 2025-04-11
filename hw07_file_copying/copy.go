@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cheggaaa/pb/v3" //nolint:depguard
+	"github.com/cheggaaa/pb/v3" //nolint:depguard,typecheck
 )
 
 var (
