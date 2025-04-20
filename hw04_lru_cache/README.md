@@ -22,7 +22,7 @@ nil <- (prev) front <-> ... <-> elem <-> ... <-> back (next) -> nil
 
 Элемент списка ListItem:
 - Value interface{}  // значение
-- Next *ListItem     // следующий элемент
+- Next *ListItem     // следующий элемент 
 - Prev *ListItem     // предыдущий элемент
 
 Сложность всех операций должна быть O(1),
